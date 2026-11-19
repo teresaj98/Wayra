@@ -20,7 +20,8 @@ Do these once per machine. Versions come from `docs/decisions.md` (DEC-S1-02, -0
    ```bash
    brew install node@26 watchman
    ```
-5. **JDK 17** (Azul Zulu), then add `JAVA_HOME` to `~/.zshrc`:
+5. **A JDK, 17 or newer**, to start Gradle. Gradle then downloads and uses its own Java 25 for the Android
+   build (DEC-S1-17), so the exact version installed does not matter. Azul Zulu 17, with `JAVA_HOME` in `~/.zshrc`:
    ```bash
    brew install --cask zulu@17
    ```
@@ -88,6 +89,14 @@ npm run ios
 Both use `.env.staging`. Use `android:uat`, `android:prod`, `ios:uat` or `ios:prod` for the other
 environments. Always start the app through these scripts: they choose the env file. A build started from
 Xcode directly has no env file and stops with an `Invalid APP_ENV` message (open item, DEC-S1-11).
+
+### Troubleshooting
+
+- **"A problem occurred starting process 'command 'node''"** on `npm run android`: a Gradle process started by
+  Android Studio is being reused and cannot find Node. Run `cd android && ./gradlew --stop && cd ..`, then
+  `npm run android` again.
+- **"Unsupported class file major version …"**: Gradle is running on an unsupported Java. Check that
+  `android/gradle/gradle-daemon-jvm.properties` exists, then run `cd android && ./gradlew --stop && cd ..`.
 
 ## Scripts
 

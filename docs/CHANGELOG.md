@@ -1,5 +1,11 @@
 # Changelog
 
+## S1 follow-ups (19 Nov 2026)
+
+- OD-1 recorded: English is the only language; the i18n layer stays with one English locale.
+- Android builds run on a Gradle-provisioned Java 25 (`android/gradle/gradle-daemon-jvm.properties`, DEC-S1-17). The app built and ran on an Android emulator (test step 2).
+- README: Java step updated and a troubleshooting section added.
+
 ## S1: Project scaffold, tooling, env files, scripts (PRD 01, 19 Nov 2026)
 
 - Bare React Native 0.88.1 project (New Architecture, Hermes, TypeScript strict), placeholder ID `com.wayra.placeholder` (F-01, F-02).

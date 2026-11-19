@@ -148,8 +148,8 @@ All versions were looked up on the npm registry, nodejs.org and the official doc
 - **Ruby/CocoaPods:** the system Ruby 2.6.10 and Bundler 1.17.2, as React Native's docs recommend. CocoaPods
   1.15.2 is installed into `vendor/bundle` and pinned in `Gemfile.lock` (resolved within the template's
   `Gemfile` limits). `pod install` needs `LANG=en_US.UTF-8`, otherwise CocoaPods fails with an encoding error.
-- **Android:** JDK 17 (Azul Zulu), per React Native's docs ("higher JDK versions" may cause problems).
-  Android SDK levels are the template's own: compileSdk 37, build-tools 37.0.0, targetSdk 36 (D-022),
+- **Android:** the build runs on Java 25 provisioned by Gradle (see DEC-S1-17); any installed JDK 17 or newer
+  only starts the Gradle wrapper. Android SDK levels are the template's own: compileSdk 37, build-tools 37.0.0, targetSdk 36 (D-022),
   minSdk 24.
 - **Rejected:** a Homebrew or rbenv Ruby (an extra tool; the system Ruby works).
 
@@ -169,3 +169,37 @@ and CI (S2) can call them before S4. `test:domain` uses `--passWithNoTests` unti
 ### DEC-S1-16 PRD location (Owner decision)
 
 The Markdown PRDs moved to `docs/prd/PRD-00.md` and `docs/prd/PRD-01.md` (formally F-08, S2).
+
+### DEC-S1-17 Gradle runs the Android build on its own Java 25 (Owner decision, 19 Nov 2026)
+
+- **Chosen:** keep `android/gradle/gradle-daemon-jvm.properties` (`toolchainVersion=25`), which Android Studio
+  generated when it opened the project. Gradle 9.4.1 downloads an Eclipse Adoptium JDK 25 into `~/.gradle/jdks`
+  (download links from foojay.io, listed in the file) and runs every Android build on it, whatever Java the
+  machine has. The owner's Mac only had Oracle JDK 27, which Gradle cannot use ("Unsupported class file major
+  version 71"); with this file the build succeeded and the app ran on an emulator.
+- **Rejected:** Java 17 as React Native's docs recommend, either installed by hand (`JAVA_HOME`) or through
+  this file. Kept 25 because it is what was verified to build and run, and every machine (and CI from S2)
+  gets the same Java automatically.
+- **Risk:** React Native's docs say JDKs newer than 17 "may" cause problems. If a native build breaks for
+  that reason, set `toolchainVersion=17` (Gradle also provisions 17).
+- **Gotcha:** a Gradle daemon started by Android Studio cannot find `node` (macOS apps launched from the Dock
+  do not see `/usr/local/bin`). If a terminal build fails with "A problem occurred starting process 'command
+  'node''", run `./gradlew --stop` in `android/` and build again from the terminal.
+
+---
+
+## Owner decisions on PRD 01 open questions
+
+### OD-1 Language: English only (Owner decision, 19 Nov 2026)
+
+- **Decided:** English is the app's only language. No second language is planned.
+- **Kept:** the i18n layer (R-15, D-019) stays. All user-facing text goes through `src/i18n` / `src/locales`
+  with a single English locale file. Units and date formats still follow the device locale and the unit
+  setting. This keeps text in one place and lets a language be added later without touching screens.
+- **PRD 01 changes this implies** (PRD files are owner exports, so they are not edited here):
+  - §1 and §2: "two languages" / "English and Hindi" becomes English only.
+  - A-01: the `app` slice has no language field. A-02: Settings has no language option.
+  - DB-03: `app_settings` stores theme and units only (no language key).
+  - A-04: English only. The "no user-facing string outside locale files" check and plural forms stay.
+  - AC-10: theme set to dark persists after restart; the Hindi part is dropped.
+  - Test sheet step 5: switch units to imperial only.
