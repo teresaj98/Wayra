@@ -1,0 +1,65 @@
+{
+  "name": "wayra",
+  "version": "0.0.1",
+  "private": true,
+  "scripts": {
+    "start": "react-native start",
+    "android": "node scripts/env.js check staging && ENVFILE=.env.staging react-native run-android",
+    "android:uat": "node scripts/env.js check uat && ENVFILE=.env.uat react-native run-android",
+    "android:prod": "node scripts/env.js check production && ENVFILE=.env.production react-native run-android",
+    "ios": "node scripts/env.js check staging && ENVFILE=.env.staging react-native run-ios",
+    "ios:uat": "node scripts/env.js check uat && ENVFILE=.env.uat react-native run-ios",
+    "ios:prod": "node scripts/env.js check production && ENVFILE=.env.production react-native run-ios",
+    "env:init": "node scripts/env.js init",
+    "lint": "eslint . --max-warnings=0 && node scripts/check-boundaries.js && node scripts/app-identity.js check",
+    "typecheck": "tsc --noEmit",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "test": "jest",
+    "test:domain": "jest --passWithNoTests src/domain __tests__/domain",
+    "db:check": "node scripts/not-yet.js db:check S4 DB-02",
+    "replay": "node scripts/not-yet.js replay S4 DB-06",
+    "identity:apply": "node scripts/app-identity.js apply",
+    "prepare": "husky"
+  },
+  "dependencies": {
+    "react": "19.3.0",
+    "react-native": "0.88.1",
+    "react-native-config": "1.7.2",
+    "react-native-safe-area-context": "5.11.1"
+  },
+  "devDependencies": {
+    "@babel/core": "7.29.13",
+    "@babel/preset-env": "7.29.7",
+    "@babel/runtime": "7.29.13",
+    "@react-native-community/cli": "20.2.0",
+    "@react-native-community/cli-platform-android": "20.2.0",
+    "@react-native-community/cli-platform-ios": "20.2.0",
+    "@react-native/babel-preset": "0.88.1",
+    "@react-native/eslint-config": "0.88.1",
+    "@react-native/jest-preset": "0.88.1",
+    "@react-native/metro-config": "0.88.1",
+    "@react-native/typescript-config": "0.88.1",
+    "@types/jest": "29.5.14",
+    "@types/react": "19.3.0",
+    "@types/react-test-renderer": "19.3.1",
+    "eslint": "9.39.5",
+    "eslint-plugin-boundaries": "7.4.2",
+    "husky": "9.1.7",
+    "jest": "29.7.0",
+    "lint-staged": "17.6.0",
+    "prettier": "3.9.10",
+    "react-test-renderer": "19.3.0",
+    "typescript": "6.0.3"
+  },
+  "engines": {
+    "node": "^24.3.0 || ^26.0.0"
+  },
+  "lint-staged": {
+    "*.{js,jsx,ts,tsx}": [
+      "eslint --max-warnings=0 --fix",
+      "prettier --write"
+    ],
+    "*.{json,md,yml,yaml}": "prettier --write"
+  }
+}

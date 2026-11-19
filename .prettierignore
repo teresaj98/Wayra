@@ -1,0 +1,8 @@
+# PRDs are exported from the owner's doc editor; keep them byte-for-byte.
+docs/prd/
+android/
+ios/
+vendor/
+coverage/
+package-lock.json
+Gemfile.lock
