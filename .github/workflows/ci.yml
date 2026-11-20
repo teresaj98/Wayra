@@ -1,10 +1,9 @@
-# CI for every push and pull request (PRD 01 F-10, AC-13). Choices: docs/decisions.md DEC-S2-01 to -06.
+# CI, started by hand on the dev branch only (owner decision DEC-S2-11; PRD 01 F-10, AC-13). Choices: docs/decisions.md DEC-S2-01 to -06.
 # Actions are pinned to full commit SHAs; the comment after each SHA is its release tag.
 name: CI
 
 on:
-  push:
-  pull_request:
+  workflow_dispatch:
 
 permissions:
   contents: read
@@ -19,6 +18,8 @@ env:
 jobs:
   checks:
     name: Lint, typecheck, tests, db:check
+    # Owner decision DEC-S2-11: manual runs on the dev branch only.
+    if: github.ref == 'refs/heads/dev'
     runs-on: ubuntu-24.04
     timeout-minutes: 20
     steps:
@@ -36,6 +37,8 @@ jobs:
 
   android:
     name: Android debug APK
+    # Owner decision DEC-S2-11: manual runs on the dev branch only.
+    if: github.ref == 'refs/heads/dev'
     runs-on: ubuntu-24.04
     timeout-minutes: 45
     steps:

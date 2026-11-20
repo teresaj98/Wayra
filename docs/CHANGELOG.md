@@ -1,5 +1,10 @@
 # Changelog
 
+## Branching and manual CI (20 Nov 2026)
+
+- New `dev` branch from `main`; all further work on feature branches from `dev` (DEC-S2-11).
+- CI and the iOS build run only by hand on `dev`; no push, pull request or nightly triggers.
+
 ## S2: CI, AGENTS.md, docs folder, decision log (PRD 01, 19 Nov 2026)
 
 - GitHub Actions CI on every push and pull request (`.github/workflows/ci.yml`): lint (with the boundary and identity checks), typecheck, tests, `db:check`, and an Android debug APK uploaded as a workflow artifact (F-10, AC-13).

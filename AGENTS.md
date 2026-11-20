@@ -48,8 +48,9 @@ npm run ios         # run on iOS with .env.staging; also ios:uat, ios:prod
 ```
 
 iOS also needs `bundle install` and `cd ios && LANG=en_US.UTF-8 bundle exec pod install`. CI
-(`.github/workflows/ci.yml`) runs lint, typecheck, tests, `db:check` and an Android debug build on every push
-and pull request. The iOS simulator build (`.github/workflows/ios.yml`) runs nightly or by hand.
+(`.github/workflows/ci.yml`: lint, typecheck, tests, `db:check`, Android debug build) and the iOS simulator
+build (`.github/workflows/ios.yml`) run **only when started by hand** (Actions tab → Run workflow) on the
+`dev` branch (DEC-S2-11). Pushes and pull requests do not start them.
 
 ## 4. Definition of done for a slice (PRD 00 section 15)
 
@@ -79,4 +80,7 @@ that it works.
 - Never weaken a test to make it pass. If a test is wrong, explain why.
 - Prefer boring, well-documented approaches over clever ones.
 - Refer to requirement and decision IDs (R-05, D-003, F-10, DEC-S2-01) in commits and PRs.
-- Commit and push only when the owner says so. Pushing to `main` triggers CI.
+- Commit and push only when the owner says so.
+- **Branches (DEC-S2-11):** `main` is the stable line; `dev` is the integration branch, created from `main`.
+  Every piece of work gets its own feature branch from `dev` (for example `feature/s3-domain`). Never commit
+  directly to `main` or `dev`; merging is the owner's call.

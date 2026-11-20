@@ -1,11 +1,9 @@
-# iOS simulator build, manual or nightly only (PRD 01 F-10). Choices: docs/decisions.md DEC-S2-02, -03, -07.
+# iOS simulator build, started by hand on the dev branch only (owner decision DEC-S2-11; PRD 01 F-10). Choices: docs/decisions.md DEC-S2-02, -03, -07.
 # Actions are pinned to full commit SHAs; the comment after each SHA is its release tag.
 name: iOS simulator build
 
 on:
   workflow_dispatch:
-  schedule:
-    - cron: '30 21 * * *' # 21:30 UTC daily (03:00 IST)
 
 permissions:
   contents: read
@@ -21,6 +19,8 @@ env:
 jobs:
   ios:
     name: iOS simulator build (Debug)
+    # Owner decision DEC-S2-11: manual runs on the dev branch only.
+    if: github.ref == 'refs/heads/dev'
     runs-on: macos-26
     timeout-minutes: 60
     steps:

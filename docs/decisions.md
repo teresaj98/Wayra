@@ -322,6 +322,18 @@ with the tag as a comment. Dependabot or Renovate is not set up; updating a pin 
 `schema_migrations`) and lists what S4 adds (paths per platform, library, full schema, points protection, log
 event names, rules for native writers, OS backup).
 
+### DEC-S2-11 Branches and manual-only CI (Owner decision, 20 Nov 2026)
+
+- **Branches:** `main` stays the stable line (S1 and its follow-ups). `dev` was created from `main` and holds
+  S2. Every later piece of work goes on its own feature branch from `dev` (for example `feature/s3-domain`).
+  Nothing is committed directly to `main` or `dev`; the owner decides when to merge.
+- **CI:** both workflows run only when started by hand (`workflow_dispatch`), and their jobs run only on
+  `dev` (`if: github.ref == 'refs/heads/dev'`); started on any other branch, the jobs show as skipped.
+  Pushes and pull requests start nothing, and the iOS nightly schedule is removed.
+- **Changes:** DEC-S2-01 ("every push and pull request") and DEC-S2-03 ("manual or nightly") are replaced by
+  this entry. PRD 01 F-10 and AC-13 ("on every push") are deviated from by owner decision. Test step 11 becomes
+  "start CI by hand on `dev`; it turns green".
+
 ---
 
 ## Owner decisions on PRD 01 open questions
