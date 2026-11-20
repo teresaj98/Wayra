@@ -1,5 +1,15 @@
 # Changelog
 
+## S2: CI, AGENTS.md, docs folder, decision log (PRD 01, 19 Nov 2026)
+
+- GitHub Actions CI on every push and pull request (`.github/workflows/ci.yml`): lint (with the boundary and identity checks), typecheck, tests, `db:check`, and an Android debug APK uploaded as a workflow artifact (F-10, AC-13).
+- iOS simulator build on a manual or nightly trigger (`.github/workflows/ios.yml`) on `macos-26` with Xcode 26.6 (F-10). Not run yet.
+- The CI debug APK embeds the JS bundle (`-PwayraEmbedJsInDebug`), so it opens on a phone without Metro (DEC-S2-06). Local builds are unchanged.
+- `AGENTS.md` is the agent entry point; `CLAUDE.md` and `.cursor/rules/wayra.mdc` point to it (F-07).
+- `docs/db.md` placeholder, to be completed in S4 (F-08). `docs/decisions.md` now explains how the decision log is organised.
+- README: CI section; agents start at `AGENTS.md`.
+- Choices recorded in `docs/decisions.md` (DEC-S2-01 to DEC-S2-10), including runner images, costs and action SHAs.
+
 ## S1 follow-ups (19 Nov 2026)
 
 - OD-1 recorded: English is the only language; the i18n layer stays with one English locale.

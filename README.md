@@ -2,7 +2,7 @@
 
 Road-trip and trek recorder for iOS and Android (bare React Native, New Architecture, TypeScript).
 Product and architecture: `docs/prd/PRD-00.md`. Current work: `docs/prd/PRD-01.md`.
-Choices and pinned versions: `docs/decisions.md`. Agents start at `CLAUDE.md`.
+Choices and pinned versions: `docs/decisions.md`. Database: `docs/db.md`. Agents start at `AGENTS.md`.
 
 ## Setup on a Mac
 
@@ -111,6 +111,17 @@ Xcode directly has no env file and stops with an `Invalid APP_ENV` message (open
 | `npm run format`         | Prettier on the whole repository                                                            |
 | `npm run env:init`       | Create the local env files from `.env.example`                                              |
 | `npm run identity:apply` | Copy the name and IDs from `app.json` into the native projects                              |
+
+## CI
+
+GitHub Actions (`.github/workflows/`, choices in `docs/decisions.md` DEC-S2-01 to -07):
+
+- **CI** (`ci.yml`) runs on every push and pull request: lint, typecheck, tests, `db:check`, and an Android
+  debug build. The APK is attached to the run as the artifact `wayra-staging-debug-apk-<run number>` (kept
+  14 days). Open the run in the repository's **Actions** tab and download it under **Artifacts**. It is a zip
+  holding `app-debug.apk`, which uses `.env.staging` and opens without Metro.
+- **iOS simulator build** (`ios.yml`) runs nightly at 21:30 UTC, or by hand: Actions tab → _iOS simulator
+  build_ → _Run workflow_.
 
 ## App name and IDs
 
