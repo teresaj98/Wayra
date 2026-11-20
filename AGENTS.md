@@ -39,9 +39,11 @@ user-facing text goes through the i18n layer, and the UI uses theme tokens with 
 Use Node 26 LTS (`.nvmrc`; 24.3 or later is accepted) and npm. Setup: `npm install`, then `npm run env:init`.
 
 ```bash
-npm run lint        # ESLint (no warnings) + import-boundary self-check + app identity check
+npm run lint        # ESLint (no warnings) + import-boundary and domain purity self-checks + app identity check
 npm run typecheck   # tsc --noEmit
-npm test            # Jest, all tests
+npm test            # Jest, Node + React Native projects, with coverage (src/domain must stay >= 90% lines)
+npm run test:domain # domain tests only
+npm run fixtures:generate  # rewrite fixtures/*.json (a test fails if they drift from the generator)
 npm run db:check    # migrations on an empty database (stub that prints SKIPPED until S4)
 npm run android     # run on Android with .env.staging; also android:uat, android:prod
 npm run ios         # run on iOS with .env.staging; also ios:uat, ios:prod

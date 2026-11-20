@@ -63,6 +63,55 @@ const flowRulesOff = Object.fromEntries(
     .map(rule => [rule, 'off']),
 );
 
+// R-02: domain code reads no clock, no randomness and no host globals; time
+// and IDs are injected. Types cannot catch this because tsconfig loads Node's
+// types for tools and tests (DEC-S3-09).
+const DOMAIN_PURITY_RULES = {
+  'no-restricted-globals': [
+    'error',
+    ...[
+      'process',
+      'Buffer',
+      'global',
+      'globalThis',
+      'window',
+      'require',
+      '__dirname',
+      '__filename',
+      'setTimeout',
+      'setInterval',
+      'setImmediate',
+      'queueMicrotask',
+      'fetch',
+      'crypto',
+      'performance',
+    ].map(name => ({
+      name,
+      message: 'R-02/R-16: domain code must not use host globals',
+    })),
+  ],
+  'no-restricted-properties': [
+    'error',
+    { object: 'Date', property: 'now', message: 'R-02: inject a Clock' },
+    {
+      object: 'Math',
+      property: 'random',
+      message: 'R-02: inject a RandomSource',
+    },
+  ],
+  'no-restricted-syntax': [
+    'error',
+    {
+      selector: "NewExpression[callee.name='Date'][arguments.length=0]",
+      message: 'R-02: new Date() reads the clock; inject a Clock',
+    },
+    {
+      selector: "CallExpression[callee.name='Date']",
+      message: 'R-02: Date() reads the clock; inject a Clock',
+    },
+  ],
+};
+
 const allow = (from, to) => ({
   from: { element: { type: from } },
   allow: { to: { element: { types: to } } },
@@ -147,4 +196,5 @@ module.exports = [
       ],
     },
   },
+  { files: ['src/domain/**/*.{js,jsx,ts,tsx}'], rules: DOMAIN_PURITY_RULES },
 ];

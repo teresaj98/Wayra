@@ -336,6 +336,137 @@ event names, rules for native writers, OS backup).
 
 ---
 
+## Slice S3: domain skeleton, geo helpers, fixtures, stub pipeline (20 Nov 2026)
+
+Versions were looked up on the npm registry on 20 Nov 2026; the pinning cutoff (DEC-S1-01) was 6 Nov 2026.
+
+### DEC-S3-01 New dev dependencies (Proposed)
+
+- **Chosen:** `@babel/register` 7.29.13 (4 Nov 2026, same release line as the pinned `@babel/core` 7.29.13;
+  see DEC-S3-08) and `@types/node` 26.6.6 (28 Oct 2026, matches Node 26 in `.nvmrc`). Both were already in
+  the tree transitively or as siblings; now they are declared and pinned.
+- **Rejected:** `@babel/register` 8.1.2 (Babel 8 line, 9 days old, and the rest of Babel is on 7.29);
+  `@types/node` 24.x (the target runtime is Node 26).
+
+### DEC-S3-02 Domain type naming (Proposed)
+
+- **Chosen:** TypeScript fields are the camelCase form of the PRD 00 section 8 columns, keeping the unit
+  suffix (`tz_offset_min` → `tzOffsetMin`, `accuracy_m` → `accuracyM`, `speed_mps` → `speedMps`), as PRD 00
+  sections 9 and 10 already do (`activeTripId`, `pipelineVersion`). Units follow R-08. The types follow the
+  section 8 columns exactly; gaps found are listed under "Open questions for the owner" below, not filled in.
+- **Added beyond D-01:** `RawFix` (a fix before ingestion: `RawPoint` without `id`, `tripId`, `trackId`,
+  `seq`, `ingestedAt`), which fixtures use and S4's `ingestPoints(trackId, fixes)` will take; `JsonObject`
+  for JSON columns; `SyncColumns` (R-11); `LatLng`; `Clock`, `RandomSource`, `IdGenerator`.
+- **Rejected:** snake_case in TypeScript (PRD 00 sections 9 and 10 use camelCase); dropping unit suffixes
+  (they keep units visible in code, R-08).
+
+### DEC-S3-03 Point flag bits (Proposed)
+
+- **Chosen:** `PointFlag.RejectedByFilter = 1`, `LowPowerSample = 2`, `Estimated = 4` (the order PRD 00
+  section 8 lists them). These values will be stored in `points.flags`, so they never change meaning; new
+  flags take the next free bit.
+
+### DEC-S3-04 `TripStats` has no `processedAt` (Proposed)
+
+- **Chosen:** the domain `TripStats` type omits `trip_stats.processed_at`. It is a clock reading, and the
+  pipeline is pure (R-02) with no time input in `PipelineInput` (PRD 00 section 10). The data layer stamps
+  it when S4's `DerivedRepo` saves a result. Empty stats use `0` for sums and speeds and `null` for altitudes
+  (no altitude is not "0 m", product quality 4).
+- **Rejected:** adding a `now` field to `PipelineInput` (changes the PRD 00 contract).
+
+### DEC-S3-05 UUIDv7: own implementation (Proposed; PRD 01 section 4 choice)
+
+- **Chosen:** our own `src/domain/ids/uuidv7.ts` (about 110 lines). `formatUuidV7(ms, randA, randB)` is
+  pure; `createUuidV7Generator(clock, random)` returns a generator that is monotonic within a millisecond
+  and when the clock goes backwards (RFC 9562 section 6.2, method 1: rand_a is a counter). Tested against
+  the RFC 9562 appendix A.6 example value, plus version, variant, ordering and overflow.
+- **Rejected:** `uuid` 14.0.3 (10 Oct 2026, maintained, `v7({ msecs, random })` accepts injected inputs).
+  Against it: it is ESM-only, so the Jest 29 CommonJS setup needs a `transformIgnorePatterns` exception; its
+  default random source is the global `crypto`, which Hermes does not provide without a polyfill, so a
+  forgotten option fails only on the phone; and its monotonic state is module-level, outside the caller's
+  control. The algorithm is short and the RFC gives a test vector, so owning it is the simpler option.
+- **For S4/S6:** the app builds one generator from `Date.now` and a secure random source (for example
+  `crypto.getRandomValues` once a polyfill or native source is chosen) and injects it.
+
+### DEC-S3-06 Fixture format and generator (Proposed)
+
+- **Format:** one JSON object per file, `fixtures/<name>.json`: `name`, `description`, optional
+  `expectedStats` (a partial `TripStats`) and `points` (an array of `RawFix`, sorted by `ts`). One point per
+  line for readable diffs. `fixtures/*.json` is excluded from Prettier because it is generated.
+- **Tracks** (start near Kaza, UTC+05:30, 14 Oct 2026 09:30 local, a fix every 5 s):
+  `straight-line` (10 km at 20 m/s, 101 points), `loop-with-stop` (1 km-radius loop at 7.85 m/s with a
+  600 s stop halfway, 281 points), `noisy-with-gap` (18 km east at 15 m/s with seeded Gaussian noise and no
+  fixes from 500 s to 800 s, 182 points).
+- **Expected stats** are ground truth from the generator's parameters, not measured from the points. For
+  the noisy track only `elapsedS`, `gapCount` and `estimatedDistanceM` are given, because whether
+  `distanceM` and `movingS` include the gap is for PRD 05 to define. Tolerances are set by PRD 05.
+- **Determinism:** a fixed start time and seed; noise comes from mulberry32 (public domain) in
+  `tools/fixtures/random.ts`. A test regenerates the fixtures and compares them byte for byte with the files.
+- **Loader:** `tools/fixtures/load.ts` (`loadFixture`, `loadAllFixtures`, `toRawPoints`), used by
+  `__tests__/`. It is Node code, outside `src`.
+- **Rejected:** a bare array of points (no room for expected stats); `JSON.stringify` with indentation
+  (about 7,000 lines per file).
+
+### DEC-S3-07 Jest: two projects and the coverage threshold (Proposed; F-06)
+
+- **Chosen:** `jest.config.js` has a `node` project (`testEnvironment: node`, no React Native preset,
+  Babel strips types) for `__tests__/{domain,data,usecases,tools}` and the same folders under `src`, and a
+  `react-native` project (the preset) for everything else. `npm test` and `npm run test:domain` pass
+  `--coverage`; `coverageThreshold` on `./src/domain/` requires 90 percent of lines for the directory as a
+  whole (AC-14). `test:domain` runs the `node` project only and no longer has `--passWithNoTests`.
+- **Rejected:** `collectCoverage: true` in the config (every single-file run would then fail the
+  threshold, because unrun domain files count as 0 percent); a glob threshold (checks each file separately,
+  stricter than the PRD asks).
+
+### DEC-S3-08 Running the TypeScript generator: `@babel/register` (Proposed)
+
+- **Chosen:** `npm run fixtures:generate` runs `scripts/generate-fixtures.js`, which loads
+  `tools/fixtures/generate.ts` through `@babel/register` with the project's `babel.config.js`, the same
+  transform Jest and Metro use. The generator can then reuse the domain geo helpers. S4's `replay` script
+  can use the same approach.
+- **Rejected:** `tsx` 4.23.15 (a second transform, with a native esbuild binary); Node's built-in type
+  stripping (needs `.ts` extensions in every import, unlike the rest of the code base); a plain JavaScript
+  generator (would duplicate the geo maths).
+
+### DEC-S3-09 Domain purity lint rules (Proposed)
+
+- **Chosen:** `eslint.config.js` adds rules for `src/domain` only: no `Date.now`, `Math.random`, `Date()` or
+  `new Date()` without arguments, and no host globals (`process`, `Buffer`, `require`, `setTimeout`,
+  `fetch`, `crypto`, `performance` and others). `scripts/check-domain-purity.js` runs in `npm run lint` and
+  checks 18 cases, so loosening the rules fails lint (tested by removing them).
+- **Why now:** `tsconfig.json` now lists `"types": ["jest", "node"]` so tools and tests can use `node:fs`.
+  That also makes Node globals type-check inside `src/domain`, so lint has to catch them instead (R-02, R-16).
+- **Rejected:** a separate `tsconfig` for tools (a second typecheck to keep in step).
+
+### DEC-S3-10 Pipeline stage contract (Proposed; D-03)
+
+- **Chosen:** a stage is `{ name, run(state, input) }` returning a partial output. Keys matching a known
+  field (`points`, `segments`, `days`, `stats`, `simplifiedRoutes`) replace it; `warnings` are appended;
+  any other key goes into `extras` under that key. If two stages write the same extras key, the later one
+  wins and a warning is added. Duplicate stage names throw (a programming error). `PIPELINE_STAGES` holds
+  the eight stages of PRD 00 section 10 in order, all identity stages; `runPipeline(input, stages?)` takes
+  another list for tests. The result is stamped `0.0.0-stub`.
+- **Config:** `pipelineConfig` in `src/domain/config.ts` is deep-frozen; every value is marked
+  `PLACEHOLDER (PRD 05)`. Recorder sampling intervals are not pipeline thresholds and are left to PRD 02/04.
+
+### DEC-S3-11 `no-bitwise` is turned off in four files (Proposed)
+
+React Native's ESLint config warns on bitwise operators, and lint allows no warnings. The polyline format,
+UUID layout, `points.flags` bitfield and mulberry32 are defined in terms of bit operations, so those files
+(and their two tests) start with `/* eslint-disable no-bitwise -- <reason> */`. The rule stays on elsewhere.
+
+### Open questions for the owner (found in S3, not blocking it)
+
+- **OQ-S3-1** PRD 00 section 8: `days` has no `pipeline_version` column, though R-05 says every derived row
+  records it. S4 (DB-03) needs an answer; the S3 `DayStat` type follows the column list as it is.
+- **OQ-S3-2** `routes_simplified` with `scope = day` has no column saying which day. Proposal for S4:
+  add `local_date` (null for trip scope).
+- **OQ-S3-3** Does `trip_stats.distance_m` include the estimated distance across gaps, or only verified
+  distance (with `estimated_distance_m` separate)? PRD 05 should state it; the noisy fixture leaves it open.
+- **OQ-S3-4** `trips.visibility` lists only `private`. The type allows only that value until a sharing PRD adds more.
+
+---
+
 ## Owner decisions on PRD 01 open questions
 
 ### OD-1 Language: English only (Owner decision, 19 Nov 2026)

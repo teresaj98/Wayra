@@ -1,5 +1,17 @@
 # Changelog
 
+## S3: Domain skeleton, geo helpers, fixtures, stub pipeline (PRD 01, 20 Nov 2026)
+
+- Domain types in `src/domain/types` (D-01): `RawPoint`, `RawFix`, `TripMeta`, `Track`, `Segment`, `DayStat`, `TripStats`, `SimplifiedRoute`, `UserEdit`, `PipelineConfig`, `PipelineInput`, `PipelineResult` (with `extras`), `Vehicle`, `MotionMode`, and `PointFlag` bits.
+- One typed, frozen `pipelineConfig` with placeholder values for PRD 05 (D-02, R-12).
+- `runPipeline` stub returning an empty valid result, version `0.0.0-stub`, with the eight stages of PRD 00 section 10 registered in order as identity stages; unknown stage output goes to `extras` (D-03).
+- Geo helpers: haversine distance, bearing, destination point, path length, polyline encode and decode, tested against Rosetta Code and Google's published values (D-04).
+- Three deterministic synthetic fixtures in `fixtures/` from `npm run fixtures:generate`, a loader in `tools/fixtures`, and a test that keeps the files in step with the generator (D-05).
+- Our own UUIDv7 with injected clock and random source, tested against the RFC 9562 example (D-06).
+- Jest split into `node` and `react-native` projects; `npm test` enforces 90 percent line coverage on `src/domain` (F-06, AC-14). Domain coverage is 100 percent of lines.
+- Lint rules and a self-check that keep clocks, randomness and host globals out of `src/domain` (R-02).
+- Choices recorded in `docs/decisions.md` (DEC-S3-01 to DEC-S3-11), plus four open questions for the owner.
+
 ## Branching and manual CI (20 Nov 2026)
 
 - New `dev` branch from `main`; all further work on feature branches from `dev` (DEC-S2-11).

@@ -100,17 +100,18 @@ Xcode directly has no env file and stops with an `Invalid APP_ENV` message (open
 
 ## Scripts
 
-| Script                   | What it does                                                                                |
-| ------------------------ | ------------------------------------------------------------------------------------------- |
-| `npm run lint`           | ESLint (no warnings), the import-boundary self-check (240 cases) and the app identity check |
-| `npm run typecheck`      | TypeScript check, no output files                                                           |
-| `npm test`               | All Jest tests                                                                              |
-| `npm run test:domain`    | Domain tests only (none yet; arrive in S3)                                                  |
-| `npm run db:check`       | Stub until S4: run migrations on an empty database and print the schema                     |
-| `npm run replay`         | Stub until S4: feed a fixture through ingestion                                             |
-| `npm run format`         | Prettier on the whole repository                                                            |
-| `npm run env:init`       | Create the local env files from `.env.example`                                              |
-| `npm run identity:apply` | Copy the name and IDs from `app.json` into the native projects                              |
+| Script                      | What it does                                                                                                              |
+| --------------------------- | ------------------------------------------------------------------------------------------------------------------------- |
+| `npm run lint`              | ESLint (no warnings), the import-boundary self-check (240 cases), the domain purity self-check and the app identity check |
+| `npm run typecheck`         | TypeScript check, no output files                                                                                         |
+| `npm test`                  | All Jest tests (Node and React Native projects) with coverage; fails under 90% domain lines                               |
+| `npm run test:domain`       | Domain tests only, with the same coverage threshold                                                                       |
+| `npm run fixtures:generate` | Rewrite the synthetic tracks in `fixtures/` from `tools/fixtures/generate.ts`                                             |
+| `npm run db:check`          | Stub until S4: run migrations on an empty database and print the schema                                                   |
+| `npm run replay`            | Stub until S4: feed a fixture through ingestion                                                                           |
+| `npm run format`            | Prettier on the whole repository                                                                                          |
+| `npm run env:init`          | Create the local env files from `.env.example`                                                                            |
+| `npm run identity:apply`    | Copy the name and IDs from `app.json` into the native projects                                                            |
 
 ## CI
 
